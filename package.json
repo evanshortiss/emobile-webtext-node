@@ -7,7 +7,8 @@
   "author": "Evan Shortiss",
   "description": "A CLI to allow sending of webtexts from terminal.",
   "contributors": [{
-      "name": "Evan Shortiss"
+      "name": "Evan Shortiss",
+      "email":"evanshortiss@gmail.com"
     }
   ],
   "bin": {

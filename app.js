@@ -6,6 +6,8 @@ var qs = require('querystring'),
 	request = require('request'),
 	constants = require('./constants.js');
 
+var cookies, CFID, CFTOKEN;
+
 // Use cookies
 request.defaults({
 	jar: true,
@@ -13,59 +15,168 @@ request.defaults({
 });
 
 
-function eMobile() {
+var eMobile = {
+	createApiQueryString: function(params) {
+		params.CFID = CFID;
+		params.CFTOKEN = CFTOKEN;
 
-};
+		return qs.stringify(params);
+	},
 
-module.exports = new eMobile();
+	getLoginCookie: function(callback) {
+		request('https://myaccount.emobile.ie/', callback.bind(this));
+	},
 
+	login: function(username, password, callback) {
+		if (typeof(username) === 'function') {
+			callback = username;
+			username = this.username;
+			password = this.password;
+		}
 
-eMobile.prototype.getLoginCookie = function(callback) {
-	request('https://myaccount.emobile.ie/', callback.bind(this));
-};
+		request({
+			url: constants.LOGIN_URL,
+			method: 'POST',
+			form: {
+				username: username,
+				userpass: password,
+				login: undefined,
+				returnTo: '/'
+			},
+			headers: {
+				"Content-Type": constants.CONTENT_TYPE,
+				"User-Agent": constants.AGENT,
+				"Referer": 'https://myaccount.emobile.ie/',
+				"Origin": 'https://myaccount.emobile.ie',
+			}
+		}, callback);
+	},
 
-eMobile.prototype.login = function(username, password, callback) {
-	if (typeof(username) === 'function') {
-		callback = username;
-		username = this.username;
-		password = this.password;
-	}
+	sendText: function(recipient, text) {
+		this.addRecipient(recipient, function() {
+			var opts = {
+				uri: constants.EMOBILE_API_URL + createApiQueryString({
+					event: 'smsAjax',
+					func: 'sendSMS'
+				}),
+				method: 'POST',
+				form: {
+					ajaxRequest: 'sendSMS',
+					messageText: text
+				},
+				headers: {
+					"Accept": '*/*',
+					"Content-Type": constants.CONTENT_TYPE,
+					"User-Agent": constants.AGENT,
+					"Referer:": 'https://myaccount.emobile.ie/go/common/message-centre/web-sms/free-web-text',
+					"Origin": 'https://myaccount.emobile.ie',
+				}
+			};
 
-	var r = request({
-		url: constants.LOGIN_URL,
-		method: 'POST',
-		form: {
-			username: username,
-			userpass: password,
-			login: undefined,
-			returnTo: '/'
-		},
-		headers: {
+			request(opts, function(err, res body) {
+				if (err || res.stautsCode != 200) {
+					console.log('ERROR SENDING TEXT');
+					process.exit(0);
+				}
+			});
+		});
+	},
+
+	addRecipient: function(number, callback) {
+		var headers: {
+			"Accept": '*/*',
 			"Content-Type": constants.CONTENT_TYPE,
 			"User-Agent": constants.AGENT,
-			"Referer": 'https://myaccount.emobile.ie/',
+			"Referer:": 'https://myaccount.emobile.ie/go/common/message-centre/web-sms/free-web-text',
 			"Origin": 'https://myaccount.emobile.ie',
 		}
-	}, callback);
+		var opts = {
+			url: constants.EMOBILE_API_URL + createApiQueryString({
+				event: 'smsAjax',
+				func: 'searchEnteredMsisdn'
+			}),
+			headers: headers,
+			method: 'POST'
+			form: {
+				ajaxRequest: 'searchEnteredMSISDN'
+				searchValue: number
+			}
+		};
+
+		// This may be uneccessary as it's just a lookup in address book
+		request({
+			url: constants.EMOBILE_API_URL + createApiQueryString({
+				event: 'smsAjax',
+				func: 'searchEnteredMsisdn'
+			}),
+			method: 'POST',
+			headers: headers,
+			form: {
+				ajaxRequest: 'searchEnteredMSISDN'
+				searchValue: number
+			}
+		}, function(err, res, body) {
+			if (err || res.stautsCode != 200) {
+				console.log(err);
+				process.exit(0);
+			}
+
+			opts = {
+				url: constants.EMOBILE_API_URL + createApiQueryString({
+					event: 'smsAjax',
+					func: 'addEnteredMsisdns'
+				}),
+				method: 'POST',
+				form: {
+					ajaxRequest: 'addEnteredMSISDNs',
+					remove: '-',
+					add: '0|' + number
+				}
+			}
+
+			// Now send the text
+			request(opts, function(err, res, body) {
+				if (err || res.stautsCode != 200) {
+					console.log(err);
+					process.exit(0);
+				}
+
+				callback();
+			});
+		});
+	}
 };
 
+module.exports = {
+	sendText: function(username, password, text, recipient, callback) {
+		console.log('Send message to ' + username);
+
+		eMobile.getLoginCookie(function() {
+			eMobile.login(username, password, function() {
+				eMobile.sendText(recipient, text);
+			})
+		});
+	},
+};
+
+
 eMobile.prototype.sendText = function(username, password, text, callback) {
-	console.log('send text');
+	console.log('Send message to ' + username);
 
 	// First need to get a cookie
 	this.getLoginCookie(function(err, res, body) {
-		if(err) {
+		if (err) {
 			console.log(err);
 			process.exit(0);
 		}
 
 		// Required cookies
-		var cookies = res.headers['set-cookie'];
-		var CFID = cookies[1].split(';')[0].split('=')[1];
-		var CFTOKEN = cookies[2].split(';')[0].split('=')[1];
+		cookies = res.headers['set-cookie'];
+		CFID = cookies[1].split(';')[0].split('=')[1];
+		CFTOKEN = cookies[2].split(';')[0].split('=')[1];
 
 		this.login(username, password, function(err, res, body) {
-			if(err) {
+			if (err) {
 				console.log(err);
 				process.exit(0);
 			}
@@ -93,7 +204,7 @@ eMobile.prototype.sendText = function(username, password, text, callback) {
 			console.log(qstring);
 
 			var opts = {
-				uri: 'https://myaccount.emobile.ie/myemobileapi/index.cfm?'+qstring,
+				uri: 'https://myaccount.emobile.ie/myemobileapi/index.cfm?' + qstring,
 				method: 'POST',
 				headers: {
 					"Accept": '*/*',
@@ -108,28 +219,14 @@ eMobile.prototype.sendText = function(username, password, text, callback) {
 				}
 			};
 
-			var r = request(opts, function(err, res, body) {
-				if(err && res.stautsCode == 200) {
+			request(opts, function(err, res, body) {
+				if (err || res.stautsCode != 200) {
 					console.log(err);
+					process.exit(0);
 				}
-
-				console.log('=========res==========');
-				console.log(res);
-				console.log('========= RES END ==========');
-
-				console.log('=========body==========');
-				console.log(body);
-				console.log('========= BODY END ==========');
 
 				console.log('TEXT SENT');
 			});
-
-			console.log('=========req==========');
-			console.log(r);
-			console.log('========= REQ END ==========');
 		});
 	});
 };
-
-
-
