@@ -10,8 +10,7 @@ module.exports = {
 	CONTENT_TYPE: 'application/x-www-form-urlencoded',
 	LOGIN_URL: 'https://myaccount.emobile.ie/go/myemobile-login-manager',
 	SEND_TEXT_REFERER_URL: 'https://myaccount.emobile.ie/go/common/message-centre/web-sms/free-web-text',
-	EMOBILE_API_URL: 'https://myaccount.emobile.ie/myemobileapi/index.cfm?'//event=smsAjax&func=sendSMS&CFID=616112&CFTOKEN=83572995,
-	// RETURN_URL: 'https://myaccount.emobile.ie/go/common/message-centre/web-sms/free-web-text',
+	EMOBILE_API_URL: 'https://myaccount.emobile.ie/myemobileapi/index.cfm?',
 	// X and Y are submitted on the website...
 	x: 118,
 	y: 28
