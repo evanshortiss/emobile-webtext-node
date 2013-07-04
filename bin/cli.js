@@ -2,12 +2,10 @@
  * Main CLI file.
  */
 
-var eMobile = require('../index.js'),
-	constants = require('../constants.js'),
+var eMobile = require('emobile-webtext'),
 	program = require('commander');
 
 program
-	.version(constants.VERSION.toString())
 	.option('-u, --number <number>', 'Phone number to login with.', String)
 	.option('-r --recipient <recipient>', 'Number to text.', String)
 	.option('-t --text <text>', 'Text to send in a webtext.', String)

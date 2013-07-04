@@ -11,7 +11,7 @@
       "url": "https://github.com/evanshortiss"
     }
   ],
-  "main": "../index.js",
+  "main": "./index.js",
   "directories" : {
       "bin": "./bin"
   },
