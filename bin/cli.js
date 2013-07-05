@@ -10,7 +10,7 @@ program
 	.parse(process.argv);
 
 
-if(program.number && program.text && program.recipient) {
+if (program.number && program.text && program.recipient) {
 	console.log();
 	program.password('Password: ', function(password) {
 		console.log();

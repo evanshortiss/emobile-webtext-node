@@ -15,9 +15,6 @@ request.defaults({
 
 
 function log(str, sameLine) {
-	if(sameLine) {
-		str+="\r";
-	}
 	console.log(str);
 }
 
@@ -44,7 +41,6 @@ var eMobile = {
 	 * @param {Function} 	callback
 	 */
 	getCookie: function(callback) {
-		console.log('Getting login cookie...');
 		request('https://myaccount.emobile.ie/', callback);
 	},
 
@@ -121,6 +117,7 @@ var eMobile = {
 					process.exit(0);
 				}
 
+				log('Text sent successfully!\n')
 				if (callback) {
 					callback(null);
 				}
