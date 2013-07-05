@@ -5,7 +5,7 @@
   "version": "0.0.4",
   "homepage": "https://github.com/evanshortiss/emobile-webtext-node",
   "author": "Evan Shortiss",
-  "description": "A CLI to allow sending of webtexts from terminal using you eMobile account.",
+  "description": "A CLI to allow sending of webtexts from terminal using your eMobile account.",
   "contributors": [{
       "name": "Evan Shortiss",
       "url": "https://github.com/evanshortiss"
