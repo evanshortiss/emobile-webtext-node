@@ -19,19 +19,12 @@ function log(str, sameLine) {
 }
 
 var eMobile = {
-  cookies: null,
-  CFID: null,
-  CFTOKEN: null,
-
 
   /**
    * Create the squery string to append to eMobile API calls
    * @params {Object}   params for the query string
    */
   createApiQueryString: function(url, params) {
-    params.CFID = this.CFID;
-    params.CFTOKEN = this.CFTOKEN;
-
     return url + qs.stringify(params);
   },
 
