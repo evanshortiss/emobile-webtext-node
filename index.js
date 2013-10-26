@@ -53,7 +53,7 @@ var eMobile = {
    */
   login: function(username, password, callback) {
     this.getCookie(function(err, res, body) {
-      if (err || res.stautsCode === 200) {
+      if (err || res.statusCode !== 200) {
         console.log('Error: Failed to retreive login cookie.');
         process.exit(0);
       }
@@ -166,7 +166,7 @@ module.exports = {
   sendText: function(username, password, text, recipient) {
     // Login before trying to send text 
     eMobile.login(username, password, function(err, res, body) {
-      if (err || res.stautsCode === 200) {
+      if (err || res.statusCode !== 200) {
         console.log('Error: Login Failed.');
         process.exit(0);
       }
